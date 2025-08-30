@@ -213,7 +213,3 @@ __marimo__/
 
 # sessions
 data/sessions/*.json
-
-# target files (non-docs)
-dbt_project/target/compiled/
-dbt_project/target/run/
