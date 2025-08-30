@@ -7,45 +7,45 @@ sources:
       - name: event_session
         description: "Session-level data including heartbeat_data JSON and raw JSON response"
         columns:
-          - name: sessionId
+          - name: session_id
             description: "Unique session identifier"
             tests:
               - not_null
               - unique
-          - name: rawResponse
+          - name: raw_response
             description: "Raw JSON containing full player session heartbeat and other info"
             tests:
               - not_null
-          - name: createdAt
+          - name: created_at
             description: "Timestamp when the session record was created"
             tests:
               - not_null
 
       - name: event_transaction
         description: "Transaction logs with purchases and events"
-        loaded_at_field: createdAt
+        loaded_at_field: created_at
         freshness:
           warn_after: { count: 25, period: hour }
           error_after: { count: 2, period: day }
         columns:
-          - name: transactionId
+          - name: transaction_id
             description: "Unique transaction identifier"
             tests:
               - not_null
               - unique
-          - name: playerId
+          - name: player_id
             description: "Player identifier who performed the transaction"
             tests:
               - not_null
-          - name: eventDateTime
+          - name: event_datetime
             description: "Timestamp of the transaction event"
             tests:
               - not_null
-          - name: purchaseItem
+          - name: purchase_item
             description: "SKU of the purchased product"
             tests:
               - not_null
-          - name: purchasePrice
+          - name: purchase_price
             description: "Purchase price in USD"
             tests:
               - not_null
@@ -57,7 +57,7 @@ sources:
               - not_null
               - accepted_values:
                   values: ["USD"]
-          - name: isRecurring
+          - name: is_recurring
             description: "Indicates if purchase is recurring"
             tests:
               - not_null
@@ -68,7 +68,7 @@ sources:
             tests:
               - accepted_values:
                   values: ["M", "Y", ""]
-          - name: transactionType
+          - name: transaction_type
             description: "Type of transaction (e.g., BattlePass, Emote, Skin)"
             tests:
               - not_null
@@ -80,19 +80,19 @@ sources:
       - name: fact_session
         description: "Session summary data loaded from external Python simulation"
         columns:
-          - name: playerId
+          - name: player_id
             description: "Player ID"
             data_type: string
             tests:
               - not_null
 
-          - name: sessionId
+          - name: session_id
             description: "Session ID"
             data_type: string
             tests:
               - not_null
 
-          - name: eventDateTime
+          - name: event_datetime
             description: "Timestamp of the event"
             data_type: timestamp
             tests:
@@ -104,7 +104,7 @@ sources:
             tests:
               - not_null
 
-          - name: eventLengthSeconds
+          - name: event_length_seconds
             description: "Session length in seconds"
             data_type: integer
             tests:
@@ -133,7 +133,7 @@ sources:
       - name: dim_players
         description: "Dimension table of players"
         columns:
-          - name: playerId
+          - name: player_id
             description: "Unique player identifier"
             data_type: string
             tests:
@@ -197,7 +197,7 @@ models:
           - dbt_utils.expression_is_true:
               expression: "BETWEEN -100 AND 100"
 
-      - name: createdAt
+      - name: created_at
         description: "Row creation timestamp in the warehouse"
         data_type: timestamp
         tests:
@@ -256,7 +256,7 @@ models:
           - dbt_utils.expression_is_true:
               expression: "BETWEEN -100 AND 100"
 
-      - name: createdAt
+      - name: created_at
         description: "Row creation timestamp in the warehouse."
         data_type: timestamp
         tests:
