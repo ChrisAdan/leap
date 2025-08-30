@@ -1,0 +1,25 @@
+name: "leap"
+version: "1.0.0"
+
+profile: "leap"
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  leap:
+    staging:
+      +schema: stage
+    marts:
+      +schema: mart
+
+seeds:
+  +schema: dim
