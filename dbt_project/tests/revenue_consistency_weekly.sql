@@ -5,11 +5,11 @@ with mart as (
     group by country, year_week
 ),
 raw as (
-    select p.country, date_trunc('week', t.eventDateTime::timestamp) as year_week,
-    round(sum(t.purchasePrice), 2) as raw_revenue
+    select p.country, date_trunc('week', t.event_datetime::timestamp) as year_week,
+    round(sum(t.purchase_price), 2) as raw_revenue
     from {{ source('leap_raw', 'event_transaction') }} t
     left join {{ source('leap_dim', 'dim_players') }} p
-    on t.playerId = p.playerId
+    on t.player_id = p.player_id
     group by country, year_week
 )
 select mart.country, mart.year_week, mart_revenue, raw_revenue
