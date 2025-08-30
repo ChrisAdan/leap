@@ -2,9 +2,9 @@
 
 with player_days as (
     select distinct
-        playerId as player_id,
-        date_trunc('day', eventDateTime::timestamp) as play_date,
-        date_trunc('month', eventDateTime::timestamp) as year_month,
+        player_id,
+        date_trunc('day', event_datetime::timestamp) as play_date,
+        date_trunc('month', event_datetime::timestamp) as year_month,
         country
     from {{ source('leap_stage', 'fact_session') }}
 ),
