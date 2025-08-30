@@ -60,12 +60,12 @@ Follow these steps to clone the repo, set up a Python virtual environment, gener
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/ChrisAdan/leap.git
-cd repo
+git clone https://github.com/ChrisAdan/leap.git leap
+cd leap
 
 # 2. Create and activate a Python virtual environment
-python3 -m venv venv
-source venv/bin/activate       # On Windows: venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate       # On Windows: venv\Scripts\activate
 
 # 3. Install Python dependencies
 pip install -r requirements.txt
