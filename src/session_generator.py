@@ -205,7 +205,7 @@ def generate_sessions(
                     {
                         "player_id": pid,
                         "session_id": session_id,
-                        "event_date_time": session_end.isoformat(),
+                        "event_datetime": session_end.isoformat(),
                         "country": country_map.get(pid, "Unknown"),
                         "event_length_seconds": durations[pid],
                         "kills": kill_dist[i],
