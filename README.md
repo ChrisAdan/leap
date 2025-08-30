@@ -15,12 +15,12 @@ The project focuses on:
 
 ## 📦 Pipeline Overview
 
-| Stage         | Tooling         | Description                                                                                                                     |
-| ------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Data Gen      | `main.py`       | Orchestrates all generators (sessions, transactions, products, heartbeats) to produce realistic JSON/CSV event data             |
-| Ingest & Load | Python + DuckDB | Loads generated raw event data into `leap_raw` tables in DuckDB                                                                 |
-| Transform     | dbt             | Transforms raw data through `leap_stage` and `leap_dim` into `leap_mart` models using game-aware logic (e.g., close encounters) |
-| Analysis      | SQL + Jupyter   | Runs performant analytical queries and produces insights from `leap_mart` tables                                                |
+| Stage         | Tooling         | Description                                                                                                                    |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Data Gen      | `main.py`       | Orchestrates all generators (sessions, transactions, products, heartbeats) to produce realistic JSON/CSV event data            |
+| Ingest & Load | Python + DuckDB | Loads generated raw event data into `leap_raw` tables in DuckDB                                                                |
+| Transform     | dbt             | Transforms raw data through `leap_stage` and `leap_dim` into `leap_mart` models using game-aware logic (e.g., close conflicts) |
+| Analysis      | SQL + Jupyter   | Runs performant analytical queries and produces insights from `leap_mart` tables                                               |
 
 ---
 
@@ -48,9 +48,9 @@ The data model and pipeline are built to enable analysts to answer:
 - Daily/weekly/monthly player activity trends
 - Player lifecycle metrics (kills/deaths, revenue, streaks)
 - Engagement by region
-- Real-time game dynamics like **close encounters**
+- Real-time game dynamics like **close conflicts**
 
-Close encounters are derived from heartbeat data in dbt using spatial proximity and time gap logic.
+Close conflicts are derived from heartbeat data in dbt using spatial proximity and time gap logic.
 
 ---
 
@@ -143,24 +143,24 @@ leap/                         # Root project directory
 │   │   ├── staging/
 │   │   │   ├── event_heartbeat.sql
 │   │   │   ├── stage_centroids.sql
-│   │   │   ├── stage_encounters.sql
+│   │   │   ├── stage_conflicts.sql
 │   │   │   └── schema.yml
 │   │
 │   │   ├── marts/
 │   │   │   ├── country_monthly_playtime.sql
 │   │   │   ├── country_weekly_revenue.sql
-│   │   │   ├── encounter_summary_daily.sql
+│   │   │   ├── conflict_summary_daily.sql
 │   │   │   ├── player_activity_daily.sql
 │   │   │   ├── player_consecutive_days_monthly.sql
 │   │   │   ├── player_stats_lifetime.sql
-│   │   │   ├── session_close_encounters_daily.sql
+│   │   │   ├── session_close_conflicts_daily.sql
 │   │   │   └── schema.yml
 │
 │   ├── macros/
-│   │   └── compute_encounters.sql
+│   │   └── compute_conflicts.sql
 │
 │   ├── tests/
-│   │   ├── no_zero_duration_encounters.sql
+│   │   ├── no_zero_duration_conflicts.sql
 │   │   ├── country_referential_integrity.sql
 │   │   ├── non_negative_playtime.sql
 │   │   ├── revenue_consistency_weekly.sql
@@ -201,11 +201,11 @@ leap/                         # Root project directory
 
 - country_monthly_playtime
 - country_weekly_revenue
-- encounter_summary_daily
+- conflict_summary_daily
 - player_activity_daily
 - player_consecutive_days_monthly
 - player_stats_lifetime
-- session_close_encounters_daily
+- session_close_conflicts_daily
 
 **leap_raw**
 
@@ -218,7 +218,7 @@ leap/                         # Root project directory
 - event_heartbeat
 - fact_session
 - stage_centroids
-- stage_encounters
+- stage_conflicts
 
 ---
 
@@ -231,7 +231,7 @@ Analysis is performed in Jupyter notebooks and SQL, targeting `leap_mart` tables
 ## 🚀 Coming Up Next
 
 - [x] End-to-end pipeline: data generation → ingestion → transformation → marts
-- [x] dbt models for encounters, centroids, and session facts
+- [x] dbt models for conflicts, centroids, and session facts
 - [x] Analytical queries for business/gameplay metrics
 - [ ] Better player generation — modeling churn, retention, and realistic growth
 - [ ] Player profiling — generate realistic player metadata with Faker
