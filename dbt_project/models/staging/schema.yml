@@ -1,0 +1,302 @@
+version: 2
+
+sources:
+  - name: leap_raw
+    description: "Raw ingested data from synthetic game simulation"
+    tables:
+      - name: event_session
+        description: "Session-level data including heartbeat_data JSON and raw JSON response"
+        columns:
+          - name: sessionId
+            description: "Unique session identifier"
+            tests:
+              - not_null
+              - unique
+          - name: rawResponse
+            description: "Raw JSON containing full player session heartbeat and other info"
+            tests:
+              - not_null
+          - name: createdAt
+            description: "Timestamp when the session record was created"
+            tests:
+              - not_null
+
+      - name: event_transaction
+        description: "Transaction logs with purchases and events"
+        loaded_at_field: createdAt
+        freshness:
+          warn_after: { count: 25, period: hour }
+          error_after: { count: 2, period: day }
+        columns:
+          - name: transactionId
+            description: "Unique transaction identifier"
+            tests:
+              - not_null
+              - unique
+          - name: playerId
+            description: "Player identifier who performed the transaction"
+            tests:
+              - not_null
+          - name: eventDateTime
+            description: "Timestamp of the transaction event"
+            tests:
+              - not_null
+          - name: purchaseItem
+            description: "SKU of the purchased product"
+            tests:
+              - not_null
+          - name: purchasePrice
+            description: "Purchase price in USD"
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= 0"
+          - name: currency
+            description: "Currency code, e.g. USD"
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ["USD"]
+          - name: isRecurring
+            description: "Indicates if purchase is recurring"
+            tests:
+              - not_null
+              - accepted_values:
+                  values: [true, false]
+          - name: cycle
+            description: "Subscription cycle (e.g., monthly, yearly)"
+            tests:
+              - accepted_values:
+                  values: ["M", "Y", ""]
+          - name: transactionType
+            description: "Type of transaction (e.g., BattlePass, Emote, Skin)"
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ["BattlePass", "Emote", "Skin"]
+
+  - name: leap_stage
+    tables:
+      - name: fact_session
+        description: "Session summary data loaded from external Python simulation"
+        columns:
+          - name: playerId
+            description: "Player ID"
+            data_type: string
+            tests:
+              - not_null
+
+          - name: sessionId
+            description: "Session ID"
+            data_type: string
+            tests:
+              - not_null
+
+          - name: eventDateTime
+            description: "Timestamp of the event"
+            data_type: timestamp
+            tests:
+              - not_null
+
+          - name: country
+            description: "Player country"
+            data_type: string
+            tests:
+              - not_null
+
+          - name: eventLengthSeconds
+            description: "Session length in seconds"
+            data_type: integer
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= 0"
+
+          - name: kills
+            description: "Kills in session"
+            data_type: integer
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= 0"
+
+          - name: deaths
+            description: "Deaths in session"
+            data_type: integer
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= 0"
+
+  - name: leap_dim
+    tables:
+      - name: dim_players
+        description: "Dimension table of players"
+        columns:
+          - name: playerId
+            description: "Unique player identifier"
+            data_type: string
+            tests:
+              - not_null
+              - unique
+
+models:
+  - name: event_heartbeat
+    description: "Flattened heartbeat data extracted from event_session. One row per heartbeat."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: session_id
+        description: "Session this heartbeat belongs to"
+        data_type: string
+        tests:
+          - not_null
+
+      - name: player_id
+        description: "Player emitting this heartbeat"
+        data_type: string
+        tests:
+          - not_null
+
+      - name: team_id
+        description: "Team emitting this heartbeat"
+        data_type: string
+        tests:
+          - not_null
+
+      - name: event_datetime
+        description: "Timestamp of the heartbeat event"
+        data_type: timestamp
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= '2025-01-01'"
+
+      - name: position_x
+        description: "X coordinate"
+        data_type: float
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "BETWEEN -100 AND 100"
+
+      - name: position_y
+        description: "Y coordinate"
+        data_type: float
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "BETWEEN -100 AND 100"
+
+      - name: position_z
+        description: "Z coordinate"
+        data_type: float
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "BETWEEN -100 AND 100"
+
+      - name: createdAt
+        description: "Row creation timestamp in the warehouse"
+        data_type: timestamp
+        tests:
+          - not_null
+
+  - name: stage_centroids
+    description: >
+      Computes team-level XYZ centroids at each heartbeat in a session.
+      Each row represents the average position of all players in the team
+      for a given heartbeat timestamp.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: session_id
+        description: "Unique session identifier."
+        data_type: string
+        tests:
+          - not_null
+
+      - name: team_id
+        description: "Unique team identifier."
+        data_type: string
+        tests:
+          - not_null
+
+      - name: event_datetime
+        description: "Timestamp of the heartbeat event."
+        data_type: timestamp
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= '2025-01-01'"
+
+      - name: centroid_x
+        description: "Average X coordinate for the team at this heartbeat."
+        data_type: float
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "BETWEEN -100 AND 100"
+
+      - name: centroid_y
+        description: "Average Y coordinate for the team at this heartbeat."
+        data_type: float
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "BETWEEN -100 AND 100"
+
+      - name: centroid_z
+        description: "Average Z coordinate for the team at this heartbeat."
+        data_type: float
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "BETWEEN -100 AND 100"
+
+      - name: createdAt
+        description: "Row creation timestamp in the warehouse."
+        data_type: timestamp
+        tests:
+          - not_null
+
+  - name: stage_conflicts
+    description: >
+      Conflict windows per session and team pairing.
+      Each row represents a distinct conflict window where teams are
+      within the distance threshold, respecting the cooldown to close the conflict.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: session_id
+        description: "Unique session identifier."
+        data_type: string
+        tests:
+          - not_null
+
+      - name: team_1_id
+        description: "First team in the conflict."
+        data_type: string
+        tests:
+          - not_null
+
+      - name: team_2_id
+        description: "Second team in the conflict."
+        data_type: string
+        tests:
+          - not_null
+
+      - name: conflict_start
+        description: "Timestamp when conflict window started."
+        data_type: timestamp
+        tests:
+          - not_null
+
+      - name: conflict_end
+        description: "Timestamp when conflict window ended."
+        data_type: timestamp
+        tests:
+          - not_null
