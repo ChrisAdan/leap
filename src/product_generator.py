@@ -1,5 +1,5 @@
 """
-generate_products.py
+product_generator.py
 
 Generates a synthetic dim_products.csv seed file in USD.
 This script is idempotent: running it again will overwrite the file.
@@ -77,16 +77,16 @@ def generate_products(n):
         tier = random.choice(TIERS)
         price = round(random.uniform(1.99, 99.99), 2)
         products.append({
-            "productId": pid,
-            "productSku": sku,
-            "productName": product_name,
+            "product_id": pid,
+            "product_sku": sku,
+            "product_name": product_name,
             "tier": tier,
-            "purchasePrice": price,
-            "transactionType": transaction_type,
-            "isRecurring": is_recurring,
+            "purchase_price": price,
+            "transaction_type": transaction_type,
+            "is_recurring": is_recurring,
             "cycle": cycle,
-            "createdAt": now_iso,
-            "lastModifiedAt": now_iso
+            "created_at": now_iso,
+            "last_modified_at": now_iso
         })
         print(f'Generated [{sku}]: {product_name} | {tier} | Recurring: {is_recurring} | Price: {price} | Created at: {now_iso}')
     return products
