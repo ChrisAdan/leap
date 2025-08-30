@@ -1,0 +1,242 @@
+version: 2
+
+models:
+  - name: player_activity_daily
+    description: >
+      Daily aggregated player activity metrics including total play time, session count, kills, deaths, and kill/death ratio.
+    columns:
+      - name: player_id
+        description: "Unique identifier for each player."
+        data_type: text
+        tests:
+          - not_null
+
+      - name: calendar_date
+        description: "The calendar date for aggregation, truncated to day."
+        data_type: date
+        tests:
+          - not_null
+
+      - name: total_play_time_seconds
+        description: "Total play time in seconds aggregated over all sessions for the player on that date."
+        data_type: integer
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: sessions_count
+        description: "Number of sessions the player participated in on the given date."
+        data_type: integer
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: total_kills
+        description: "Sum of kills recorded for the player on the given date."
+        data_type: integer
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: total_deaths
+        description: "Sum of deaths recorded for the player on the given date."
+        data_type: integer
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: kill_death_ratio
+        description: "Ratio of kills to deaths for the player on the given date. Null if deaths are zero."
+        data_type: numeric
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "IS NULL OR kill_death_ratio >= 0"
+
+  - name: conflict_summary_daily
+    description: |
+      Daily summary of team conflicts within sessions, including count and total conflict duration.
+      One row per combination of team 1/team 2 conflict.
+    columns:
+      - name: session_id
+        description: "Unique identifier for the game session."
+        tests:
+          - not_null
+
+      - name: team_1_id
+        description: "ID of the first team involved in the conflict."
+        tests:
+          - not_null
+
+      - name: team_2_id
+        description: "ID of the second team involved in the conflict."
+        tests:
+          - not_null
+
+      - name: calendar_day
+        description: "Date of the conflicts, truncated to day."
+        tests:
+          - not_null
+
+      - name: daily_conflict_count
+        description: "Number of distinct conflicts between teams on the calendar day."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 1"
+
+      - name: total_conflict_seconds
+        description: "Total number of seconds teams were in conflicts on this day."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+
+  - name: player_stats_lifetime
+    description: "Aggregated player stats with kill/death totals and ratio, plus first and last play timestamps."
+    columns:
+      - name: country
+        description: "Player's country."
+        tests:
+          - not_null
+        data_type: string
+      - name: player_id
+        description: "Unique player identifier."
+        tests:
+          - not_null
+          - unique
+        data_type: string
+      - name: total_kills
+        description: "Total kills recorded for the player."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+        data_type: integer
+      - name: total_deaths
+        description: "Total deaths recorded for the player."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+        data_type: integer
+      - name: kill_death_ratio
+        description: "Ratio of total kills to total deaths. Null if total deaths is zero."
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+        data_type: float
+      - name: first_played
+        description: "Timestamp of the player's first recorded session."
+        tests:
+          - not_null
+        data_type: timestamp
+      - name: last_played
+        description: "Timestamp of the player's most recent recorded session."
+        tests:
+          - not_null
+        data_type: timestamp
+
+  - name: player_consecutive_days_monthly
+    description: |
+      Maximum consecutive days played by each player per month, including their country.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - player_id
+            - year_month
+            - country
+    columns:
+      - name: player_id
+        description: "Unique identifier for the player."
+        tests:
+          - not_null
+        data_type: string
+
+      - name: year_month
+        description: "Truncated date to month level representing the year and month."
+        tests:
+          - not_null
+        data_type: date
+
+      - name: country
+        description: "Country associated with the player session."
+        tests:
+          - not_null
+        data_type: string
+
+      - name: max_consecutive_days_played
+        description: "The longest streak of consecutive days played by the player in the month."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+        data_type: integer
+
+  - name: country_weekly_revenue
+    description: "Aggregated weekly revenue by country based on player transactions."
+    columns:
+      - name: country
+        description: "Country of the player."
+        tests:
+          - not_null
+        data_type: string
+
+      - name: year_week
+        description: "Week start date (truncated to week) of the transaction."
+        tests:
+          - not_null
+        data_type: timestamp
+
+      - name: total_revenue
+        description: "Total revenue generated in the given week and country."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+        data_type: numeric
+
+  - name: country_monthly_playtime
+    description: "Aggregated monthly total playtime in seconds grouped by country."
+    columns:
+      - name: country
+        description: "Country of the players."
+        tests:
+          - not_null
+      - name: year_month
+        description: "Month of the year for the aggregation."
+        tests:
+          - not_null
+      - name: total_play_time_seconds
+        description: "Total playtime in seconds aggregated over the month."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+  - name: session_conflicts_daily
+    description: "Daily summary of conflicts per session, including count and total conflict duration."
+    columns:
+      - name: session_id
+        description: "Unique identifier for the game session."
+        tests:
+          - not_null
+      - name: calendar_day
+        description: "Date (day) of the conflicts."
+        tests:
+          - not_null
+      - name: conflict_count
+        description: "Count of conflicts during the session day."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: total_conflict_seconds
+        description: "Total seconds spent in conflicts during the session day."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
