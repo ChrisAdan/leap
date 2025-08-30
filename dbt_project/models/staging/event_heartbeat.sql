@@ -6,29 +6,29 @@
 ) }}
 
 with source as (
-    select rawResponse
+    select raw_response
     from {{ source('leap_raw', 'event_session')}}
     {% if is_incremental() %}
       -- Only get sessions newer than what we've already processed
-      where (rawResponse->>'$.endTime')::timestamp
+      where (raw_response ->>'$.end_time')::timestamp
             > (select max(event_datetime) from {{ this }})
     {% endif %}
 ),
 
 expanded as (
     select 
-        (hb.value->>'$.sessionId')::varchar       as session_id,
+        (hb.value->>'$.session_id')::varchar       as session_id,
         (hb.value->>'$.timestamp')::timestamp       as event_datetime,
-        (hb.value->>'$.playerId')::varchar          as player_id,
-        (hb.value->>'$.teamId')::varchar            as team_id,
-        (hb.value->>'$.positionX')::float           as position_x,
-        (hb.value->>'$.positionY')::float           as position_y,
-        (hb.value->>'$.positionZ')::float           as position_z
+        (hb.value->>'$.player_id')::varchar          as player_id,
+        (hb.value->>'$.team_id')::varchar            as team_id,
+        (hb.value->>'$.position_x')::float           as position_x,
+        (hb.value->>'$.position_y')::float           as position_y,
+        (hb.value->>'$.position_z')::float           as position_z
     from source,
-         json_each(rawResponse->'$.heartbeats') as hb
+         json_each(raw_response->'$.heartbeats') as hb
 )
 
 select
     *,
-    now()::timestamp as createdAt
+    now()::timestamp as created_at
 from expanded

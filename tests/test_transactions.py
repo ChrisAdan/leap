@@ -60,7 +60,7 @@ def test_generate_transactions_for_player_day_behavior(sample_products_df, behav
         for key in [
             "transaction_id",
             "player_id",
-            "event_date_time",
+            "event_datetime",
             "purchase_item",
             "purchase_price",
             "currency",
@@ -78,7 +78,7 @@ def test_generate_transactions_for_player_day_behavior(sample_products_df, behav
         assert tx["currency"] == "USD"
         assert tx["purchase_item"] in sample_products_df["product_sku"].values
 
-        datetime.fromisoformat(tx["event_date_time"])
+        datetime.fromisoformat(tx["event_datetime"])
         assert tx["transaction_id"].startswith("TX-")
 
 
@@ -88,7 +88,7 @@ def test_save_transactions_json_creates_file(tmp_path):
         {
             "transaction_id": "TX-1",
             "player_id": "p1",
-            "event_date_time": "2025-08-08T12:00:00",
+            "event_datetime": "2025-08-08T12:00:00",
             "purchase_item": "SKU-1001",
             "purchase_price": 5.0,
             "currency": "USD",
@@ -123,7 +123,7 @@ def test_write_transactions_to_duckdb_inserts(sample_products_df):
         {
             "transaction_id": "TX-1",
             "player_id": "p1",
-            "event_date_time": "2025-08-08T12:00:00",
+            "event_datetime": "2025-08-08T12:00:00",
             "purchase_item": "SKU-1001",
             "purchase_price": 5.0,
             "currency": "USD",

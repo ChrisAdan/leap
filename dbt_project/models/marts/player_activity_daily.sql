@@ -5,15 +5,15 @@
 
 with sessions as (
     select
-        playerId as player_id,
-        date_trunc('day'::varchar, eventDateTime::timestamp) as calendar_date,
-        eventLengthSeconds,
+        player_id,
+        date_trunc('day'::varchar, event_datetime::timestamp) as calendar_date,
+        event_length_seconds,
         kills,
         deaths
     from {{ source('leap_stage', 'fact_session') }}
 
     {% if is_incremental() %}
-      where date_trunc('day'::varchar, eventDateTime::timestamp) > (
+      where date_trunc('day'::varchar, event_datetime::timestamp) > (
         select max(calendar_date) from {{ this }}
       )
     {% endif %}
@@ -23,7 +23,7 @@ daily_agg as (
     select
         player_id,
         calendar_date,
-        sum(eventLengthSeconds) as total_play_time_seconds,
+        sum(event_length_seconds) as total_play_time_seconds,
         count(*) as sessions_count,
         sum(kills) as total_kills,
         sum(deaths) as total_deaths,

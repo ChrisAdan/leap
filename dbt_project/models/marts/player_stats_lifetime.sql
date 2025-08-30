@@ -3,11 +3,11 @@
 with player_stats as (
     select
         country,
-        playerId as player_id,
+        player_id,
         sum(kills) as total_kills,
         sum(deaths) as total_deaths,
-        min(eventDateTime) as first_played,
-        max(eventDateTime) as last_played
+        min(event_datetime) as first_played,
+        max(event_datetime) as last_played
     from {{ source('leap_stage', 'fact_session') }}
     group by country, player_id
 ),

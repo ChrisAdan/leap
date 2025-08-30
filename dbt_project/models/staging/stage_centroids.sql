@@ -43,5 +43,5 @@ select
     centroid_x::float       as centroid_x,
     centroid_y::float       as centroid_y,
     centroid_z::float       as centroid_z,
-    now()::timestamp        as createdAt
+    now()::timestamp        as created_at
 from centroids

@@ -3,10 +3,10 @@
 with sessions as (
     select
         p.country,
-        date_trunc('month', s.eventDateTime::timestamp) as year_month,
-        eventLengthSeconds as session_seconds
+        date_trunc('month', s.event_datetime::timestamp) as year_month,
+        event_length_seconds as session_seconds
     from {{ source('leap_stage', 'fact_session') }} s
-    join {{ source('leap_dim', 'dim_players') }} p on s.playerId = p.playerId
+    join {{ source('leap_dim', 'dim_players') }} p on s.player_id = p.player_id
 ),
 
 monthly_agg as (

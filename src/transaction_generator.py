@@ -52,7 +52,7 @@ def generate_transactions_for_player_day(player_id, date, products_df):
         transactions.append({
             "transaction_id": f"TX-{player_id[:8]}-{ts.strftime('%Y%m%d%H%M%S')}-{random.randint(1000,9999)}",
             "player_id": player_id,
-            "event_date_time": ts.isoformat(),
+            "event_datetime": ts.isoformat(),
             "purchase_item": product["product_sku"],
             "purchase_price": amount,  # USD
             "currency": "USD",

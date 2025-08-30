@@ -20,7 +20,7 @@ def summarize_session(player_ids, session_id, session_end, durations, country_ma
         summary_rows.append({
             "player_id": pid,
             "session_id": session_id,
-            "event_date_time": session_end.isoformat(),
+            "event_datetime": session_end.isoformat(),
             "country": country_map[pid],
             "event_length_seconds": durations[pid],
             "kills": kill_dist[i],
