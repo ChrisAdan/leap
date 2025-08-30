@@ -55,7 +55,7 @@ def duck_conn(session_path):
         CREATE TABLE leap_stage.fact_session (
             player_id TEXT,
             session_id TEXT,
-            event_date_time TIMESTAMP,
+            event_datetime TIMESTAMP,
             country TEXT,
             event_length_seconds INTEGER,
             kills INTEGER,
@@ -154,7 +154,7 @@ def test_stage_session(duck_conn):
         {
             "player_id": "player001",
             "session_id": "sess001",
-            "event_date_time": datetime.now(timezone.utc).isoformat(),
+            "event_datetime": datetime.now(timezone.utc).isoformat(),
             "country": "US",
             "event_length_seconds": 1800,
             "kills": 7,
